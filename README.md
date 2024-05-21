@@ -10,7 +10,7 @@ Send-Code.ru - это opensource платформа для обмена и хр�
 
 1. Клонируйте или скачайте и распакуйте репозиторий:
 ```bash
-git clone https://github.com/yourusername/send-code.git
+git clone https://github.com/infikot/send-code.git
 ```
 2. Перейдите в директорию проекта:
 ```bash
