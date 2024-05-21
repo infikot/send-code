@@ -18,7 +18,7 @@ cd send-code.ru
 ```
 3. Установите зависимости:
 ```bash
-pip3 install req.txt
+pip3 install -r req.txt
 ```
 4. Запустите сервер:
 ```bash
