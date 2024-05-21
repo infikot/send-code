@@ -20,7 +20,7 @@ cd send-code
 ```bash
 pip3 install -r req.txt
 ```
-4. Запустите сервер:
+4. Запустите сайт:
 ```bash
 python3 app.py
 ```
