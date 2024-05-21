@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>О проекте</h2>
+    <div>
+      <d>Это написанный @infikot сайт для обменом текста вида copy-paste вида opensource.</d>
+    </div>
+    <div>
+      <a href="https://t.me/infinite_edit" class="btn btn-primary mt-3">Телеграм</a>
+      <a href="https://github.com/infikot" class="btn btn-dark mt-3">Исходный код</a>
+    </div>
+    <div>
+      <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Вернуться ко Всем Вставкам</a>
+    </div>
+
+{% endblock %}

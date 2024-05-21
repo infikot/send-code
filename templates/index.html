@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2 class="my-4">Все Вставки</h2>
+    <d>Страница: {{ pastes.page or '???' }}</d>
+    <div class="list-group">
+        {% for paste in pastes.items %}
+            <a href="{{ url_for('paste', paste_id=paste.id) }}" class="list-group-item list-group-item-action">
+                Вставка №{{ paste.id }} от {{ paste.created_at.strftime('%Y-%m-%d %H:%M') }} под именем: "{{ paste.title or 'Untitled' }}"
+            </a>
+        {% endfor %}
+    </div>
+    <a href="{{ url_for('new_paste') }}" class="btn btn-primary mt-3">Создать Новую Вставку</a>
+    {% if pastes.has_prev %}
+        <a href="{{ url_for('index', page=pastes.prev_num) }}" class="btn btn-secondary mt-3">Страница {{pastes.prev_num}}</a>
+    {% endif %}
+    {% if pastes.has_next %}
+        <a href="{{ url_for('index', page=pastes.next_num) }}" class="btn btn-secondary mt-3">Страница {{pastes.next_num}}</a>
+    {% endif %}
+{% endblock %}
