@@ -3,11 +3,19 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 import time
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pastes.db'
 db = SQLAlchemy(app)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    storage_uri="memory://",
+)
 
 
 class Paste(db.Model):
@@ -26,9 +34,6 @@ class Paste(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-
-
-print("nice")
 
 
 @app.route('/')
@@ -57,14 +62,9 @@ def paste(paste_id):
 
 
 @app.route('/new', methods=['GET', 'POST'])
+@limiter.limit("1 per 5 second", error_message="Too fast! Try later!")
+@limiter.limit("50 per 1 day", error_message="Spam! U are blocked for 1 day!")
 def new_paste():
-    if 'last_request_time' in session:
-        last_request_time = session['last_request_time']
-        current_time = time.time()
-        if current_time - last_request_time < 2:
-            flash('You are doing that too much. Please wait a few seconds and try again.')
-            return redirect(url_for('index'))
-
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']

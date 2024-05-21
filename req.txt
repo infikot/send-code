@@ -2,3 +2,4 @@ flask
 alembic
 werkzeug
 flask_sqlalchemy
+flask_limiter
