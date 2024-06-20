@@ -5,6 +5,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import time
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from pytz import timezone
+
+tz = timezone('Europe/Moscow')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -22,7 +25,7 @@ class Paste(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
     content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(tz=tz))
     password_hash = db.Column(db.String(128))
     is_public = db.Column(db.Boolean, default=True)
 

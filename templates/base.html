@@ -7,12 +7,19 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Yandex.RTB -->
+    <script>window.yaContextCb=window.yaContextCb||[]</script>
+    <script src="https://yandex.ru/ads/system/context.js" async></script>
 </head>
 <body>
+    <!-- Эти ***чие фиксы я и вправду делал с помощью нейросети тк не понимал в чём баг, не вам меня осуждать! -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{{ url_for('index') }}">Send-Code - Копируй, отправляй, делись!</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav mr-auto">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+            <span class="d-block d-sm-inline">Send-Code -</span>
+            <span class="d-block d-sm-inline">Копируй, отправляй, делись!</span>
+        </a>
+        <div class="w-100">
+            <ul class="navbar-nav d-flex">
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('index') }}">Главная</a>
                 </li>
@@ -28,5 +35,15 @@
     <div class="container">
         {% block content %}{% endblock %}
     </div>
+    <!-- Yandex.RTB R-A-9517966-1 -->
+    <script>
+    window.yaContextCb.push(()=>{
+        Ya.Context.AdvManager.render({
+            "blockId": "R-A-9517966-1",
+            "type": "floorAd",
+            "platform": "desktop"
+        })
+    })
+    </script>
 </body>
 </html>
