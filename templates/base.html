@@ -7,9 +7,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.png') }}">
-    <!-- Yandex.RTB -->
-    <script>window.yaContextCb=window.yaContextCb||[]</script>
-    <script src="https://yandex.ru/ads/system/context.js" async></script>
+    <!-- Индексирование -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/languages/autoit.min.js"></script>
 </head>
 <body>
     <!-- Эти ***чие фиксы я и вправду делал с помощью нейросети тк не понимал в чём баг, не вам меня осуждать! -->
@@ -35,15 +38,88 @@
     <div class="container">
         {% block content %}{% endblock %}
     </div>
-    <!-- Yandex.RTB R-A-9517966-1 -->
+    <!-- Индексирование -->
     <script>
-    window.yaContextCb.push(()=>{
-        Ya.Context.AdvManager.render({
-            "blockId": "R-A-9517966-1",
-            "type": "floorAd",
-            "platform": "desktop"
-        })
-    })
+        document.addEventListener("DOMContentLoaded", function() {
+            var contentTextarea = document.getElementById("content");
+            var previewCode = document.getElementById("preview");
+
+            contentTextarea.addEventListener("input", function() {
+                previewCode.textContent = contentTextarea.value;
+                Prism.highlightElement(previewCode);
+            });
+        });
+    </script>
+    <!-- Чат-бот -->
+    <div class="chat-button" onclick="toggleChat()">💬</div>
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <span>Чат с Send-Code AI</span>
+            <span class="chat-close" onclick="toggleChat()">✖</span>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Введите сообщение...">
+            <button onclick="sendMessage()">Отправить</button>
+        </div>
+    </div>
+
+    <script>
+        let chatHistory = [];
+        let lastRequestTime = 0;
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.style.display = chatWindow.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function sendMessage() {
+            const now = Date.now();
+            if (now - lastRequestTime < 50000) {
+                alert("Запросы можно делать раз в 50 секунд");
+                return;
+            }
+
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (message) {
+                displayMessage('User: ' + message);
+                chatHistory.push('User: ' + message);
+
+                // Отправляем запрос к нашему API
+                fetch(`/generate_neuro?history=${encodeURIComponent(chatHistory.join('\n'))}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            displayMessage('Error: ' + data.error);
+                        } else {
+                            displayMessage('AI: ' + data.response);
+                            chatHistory.push('AI: ' + data.response);
+                        }
+                    })
+                    .catch(error => {
+                        displayMessage('Error: ' + error);
+                    });
+
+                input.value = '';
+                lastRequestTime = now;
+            }
+        }
+
+        function displayMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Обработка нажатия Enter в поле ввода
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
     </script>
 </body>
 </html>

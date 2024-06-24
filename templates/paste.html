@@ -1,11 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2 class="my-4">{{ paste.title or 'Untitled' }}</h2>
-    <div class="card">
-        <div class="card-body">
-            <pre>{{ paste.content }}</pre>
-        </div>
+    <h2 class="my-4">{{ paste.title or 'Без названия' }}</h2>
+    <div>
+        <pre><code class="language-javascript">{{ paste.content | e }}</code></pre>
     </div>
     <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Вернуться ко Всем Вставкам</a>
 {% endblock %}
