@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2 class="my-4">Создать Новую Вставку</h2>
+    <form action="{{ url_for('new_paste') }}" method="post">
+        <div class="form-group">
+            <div class="code-container">
+                <textarea id="content" name="content" class="form-control" rows="10" required></textarea>
+                <pre id="highlighting"><code id="highlightingContent" class="language-javascript"></code></pre>
+            </div>
+        </div>
+        <!-- Поле для имени -->
+        <div class="form-group">
+            <div class="input-group">
+                <input type="text" name="title" id="title" class="form-control" placeholder="Выбрать имя (необязательно)">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" onclick="generateName()">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABP0lEQVR4nO2UsUrEYBCEP9DCSmyEE2IpVwk+hJWF4GHpQ+gpVtqLcOBzSLhGPBtF795AEBuxtVLwTkG7k4EJhPgnivltxIEpsruZ2X/3T+AfkTAPpMDI7ALNmOJPwLhAxZIYBqkFTy0o9hw7jmEwslhSOJViw982eI5h0LVYz8LimWMaX200K5a8QCQkXujQTGOK/22sAwPg1ewDre++PAEsAwfAOXAL3AHTzh8FFp+xUyU8BewCD4EX93Kd6/kN2AQawByw5ZhyayFxFV3nBO+BQ2DVt2bSdQPnJV5E27mrkMGJkzfASsUpX1zXKGly7D/AJ2THm6kQzxtIrMzgMZArXdrYXHJd388aRxE7zl38xGDfda3cktvuWtwG3p3boCY6XzSjyzJb10RX8dIfmWausajz7CYGxxQD6lziix82aIAaOForIgAAAABJRU5ErkJggg==" alt="find-user-male">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Поле для пароля -->
+        <div class="form-group">
+            <div class="input-group">
+                <input type="password" name="password" id="password" class="form-control" placeholder="Выбрать пароль (необязательно)">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" onclick="generatePassword()">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAvUlEQVR4nO2UMQ7CMAxF3whI5AxwG8pQzgK9IRUDsIK60xsAe1AkF2UggbhUytAv/SGy/b9jR4EMMAMq4AQ8hUdgB0z7ii+BBrABXoFFn84bEboAJTAXliLexSYag8oTMB/ixjPZagzOUuy6DWEjOW4nyXhIsRtJCEZy7hqDbpH/yntjDbSRl2MDdDXFLwYacSu8McSVU+tGg6QRHYDai8XOqh3UwN6Lxc7jkr8inxG1Q38VhSRqxFeKm2eOF+rukEieenj/AAAAAElFTkSuQmCC" alt="password">
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="form-check">
+            <input type="checkbox" name="is_public" class="form-check-input" id="is_public" checked>
+            <label class="form-check-label" for="is_public">Публичная вставка?</label>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Подтвердить</button>
+    </form>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Вернуться ко Всем Вставкам</a>
+
+    <script>
+        const textarea = document.getElementById('content');
+        const highlighting = document.getElementById('highlighting');
+        const highlightingContent = document.getElementById('highlightingContent');
+
+        function update(text) {
+            let result = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            highlightingContent.innerHTML = result;
+            Prism.highlightElement(highlightingContent);
+        }
+
+        function syncScroll() {
+            highlighting.scrollTop = textarea.scrollTop;
+            highlighting.scrollLeft = textarea.scrollLeft;
+        }
+
+        textarea.addEventListener('input', function () {
+            update(this.value);
+        });
+
+        textarea.addEventListener('scroll', syncScroll);
+
+        // Инициализация
+        update(textarea.value);
+
+        // Генерация имени
+        function generateName() {
+            const titleField = document.getElementById('title');
+            const content = document.getElementById('content').value;
+
+            let requestData = {};
+            if (content.trim()) {
+                requestData.content = content.substring(0, 1000);
+            } else {
+                requestData.random_number = Math.floor(Math.random() * 999) + 1;
+            }
+
+            fetch('/generate_name', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                titleField.value = data.name;
+                textarea.focus(); // Возвращаем фокус на textarea
+            })
+            .catch(error => {
+                console.error('Ошибка при генерации имени:', error);
+                textarea.focus(); // Возвращаем фокус на textarea даже в случае ошибки
+            });
+        }
+
+        // Генерация пароля через запрос к серверу
+        function generatePassword() {
+            fetch('/generate_password')
+                .then(response => response.json())
+                .then(data => {
+                    const passwordField = document.getElementById('password');
+                    passwordField.value = data.password;
+                    navigator.clipboard.writeText(data.password);
+                    alert('Пароль скопирован в буфер обмена!');
+                    textarea.focus(); // Возвращаем фокус на textarea
+                })
+                .catch(error => {
+                    console.error('Ошибка при генерации пароля:', error);
+                    textarea.focus(); // Возвращаем фокус на textarea даже в случае ошибки
+                });
+        }
+
+    </script>
+{% endblock %}

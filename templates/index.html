@@ -1,20 +1,85 @@
 {% extends "base.html" %}
-
 {% block content %}
-    <h2 class="my-4">Все Вставки</h2>
-    <d>Страница: {{ pastes.page or '???' }}</d>
+
+<div class="mb-4">
+    <input type="text"
+           id="searchInput"
+           class="form-control"
+           placeholder="Поиск по названию..."
+           value="{{ request.args.get('search', '') }}"
+    >
+</div>
+
+<h2 class="my-4">Все Вставки</h2>
+
+<div id="pastesList">
+    <p>Страница: {{ pastes.page or '???' }}</p>
+
     <div class="list-group">
         {% for paste in pastes.items %}
-            <a href="{{ url_for('paste', paste_id=paste.id) }}" class="list-group-item list-group-item-action">
-                Вставка №{{ paste.id }} от {{ paste.created_at.strftime('%Y-%m-%d %H:%M') }} под именем: "{{ paste.title or 'Untitled' }}"
+            <a href="{{ url_for('paste', paste_code=paste.code) }}"
+               class="list-group-item list-group-item-action">
+                Вставка {{ paste.code }} от {{ paste.created_at.strftime('%Y-%m-%d %H:%M') }}
+                под именем: "{{ paste.title or 'Untitled' }}"
             </a>
         {% endfor %}
     </div>
-    <a href="{{ url_for('new_paste') }}" class="btn btn-primary mt-3">Создать Новую Вставку</a>
+</div>
+
+<a href="{{ url_for('new_paste') }}" class="btn btn-main mt-3" style="margin-top: 20px;">
+    Создать Новую Вставку
+</a>
+
+<div class="pagination mt-4">
     {% if pastes.has_prev %}
-        <a href="{{ url_for('index', page=pastes.prev_num) }}" class="btn btn-secondary mt-3">Страница {{pastes.prev_num}}</a>
+        <a href="{{ url_for('index', page=pastes.prev_num, search=request.args.get('search', '')) }}" class="btn btn-pages">
+            ⟨ Предыдущая
+        </a>
     {% endif %}
+
+    <a href="{{ url_for('index', search=request.args.get('search', '')) }}" class="btn btn-gray">Главная</a>
+
     {% if pastes.has_next %}
-        <a href="{{ url_for('index', page=pastes.next_num) }}" class="btn btn-secondary mt-3">Страница {{pastes.next_num}}</a>
+        <a href="{{ url_for('index', page=pastes.next_num, search=request.args.get('search', '')) }}" class="btn btn-pages">
+            Следующая ⟩
+        </a>
     {% endif %}
+</div>
+
+<script>
+let searchTimeout;
+
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        const searchQuery = e.target.value;
+        const currentUrl = new URL(window.location);
+        currentUrl.searchParams.set('search', searchQuery);
+        currentUrl.searchParams.delete('page'); // Сброс на первую страницу при новом поиске
+        window.history.pushState({}, '', currentUrl);
+        fetch(currentUrl)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                document.getElementById('pastesList').innerHTML =
+                    doc.getElementById('pastesList').innerHTML;
+
+                // Обновляем пагинацию
+                const newPagination = doc.querySelector('.pagination');
+                document.querySelector('.pagination').innerHTML = newPagination.innerHTML;
+            });
+    }, 500);
+});
+
+// Сохраняем значение поиска при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchValue = urlParams.get('search');
+    if (searchValue) {
+        document.getElementById('searchInput').value = searchValue;
+    }
+});
+</script>
+
 {% endblock %}

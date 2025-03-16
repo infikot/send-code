@@ -2,8 +2,39 @@
 
 {% block content %}
     <h2 class="my-4">{{ paste.title or 'Без названия' }}</h2>
-    <div>
-        <pre><code class="language-javascript">{{ paste.content | e }}</code></pre>
+    <div style="position: relative;">
+        <pre id="code-container" style="position: relative;"><code id="code-content" class="language-javascript">{{ paste.content | e }}</code></pre>
+
+        <!-- Плавающая кнопка копирования -->
+        <button id="copy-button" style="
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--card-bg);
+            border: none;
+            border-radius: 50%;
+            padding: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">
+            <img src="{{ url_for('static', filename='copy.png') }}" alt="Copy" style="width: 24px; height: 24px;">
+        </button>
     </div>
-    <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Вернуться ко Всем Вставкам</a>
+    <a href="{{ url_for('index') }}" class="btn btn-dark-gray mt-3">Вернуться ко Всем Вставкам</a>
+
+    <script>
+        // Логика копирования содержимого
+        document.getElementById('copy-button').addEventListener('click', function() {
+            const codeContent = document.getElementById('code-content').innerText;
+            navigator.clipboard.writeText(codeContent).then(function() {
+                alert('Код скопирован в буфер обмена!');
+            }, function(err) {
+                console.error('Ошибка копирования: ', err);
+            });
+        });
+    </script>
 {% endblock %}

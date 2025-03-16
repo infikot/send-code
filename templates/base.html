@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+    (function() {
+        function getInitialTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                return savedTheme;
+            }
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', getInitialTheme());
+    })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>send-code.ru</title>
@@ -15,26 +27,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/languages/autoit.min.js"></script>
 </head>
 <body>
-    <!-- Эти ***чие фиксы я и вправду делал с помощью нейросети тк не понимал в чём баг, не вам меня осуждать! -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{{ url_for('index') }}">
-            <span class="d-block d-sm-inline">Send-Code -</span>
-            <span class="d-block d-sm-inline">Копируй, отправляй, делись!</span>
-        </a>
-        <div class="w-100">
-            <ul class="navbar-nav d-flex">
+        <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between">
+            <!-- Название сайта -->
+            <a class="navbar-brand" href="/">
+                <span class="d-block d-sm-inline">Send-Code -</span>
+                <span class="d-block d-sm-inline">Копируй, отправляй, делись!</span>
+            </a>
+
+
+            <!-- Навигационные ссылки -->
+            <ul class="navbar-nav flex-column flex-sm-row mt-2 mt-sm-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('index') }}">Главная</a>
+                    <a class="nav-link" href="/">Главная</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('new_paste') }}">Новая вставка</a>
+                    <a class="nav-link" href="/new">Новая вставка</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('about') }}">О проекте</a>
+                    <a class="nav-link" href="/news">Новости сайта</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/about">О проекте</a>
                 </li>
             </ul>
         </div>
+        <div class="d-flex flex-column flex-sm-row align-items-right justify-content-between">
+            <!-- Кнопка смены темы -->
+            <button
+                onclick="setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')"
+                class="btn btn-outline-secondary">
+                <span id="theme-icon">☀️</span>
+            </button>
+        </div>
+
     </nav>
+
+
     <div class="container">
         {% block content %}{% endblock %}
     </div>
@@ -50,20 +79,56 @@
             });
         });
     </script>
-    <!-- Чат-бот -->
-    <div class="chat-button" onclick="toggleChat()">💬</div>
-    <div class="chat-window" id="chatWindow">
+    <div class="chat-button" onclick="toggleChat()">
+        <img src="{{ url_for('static', filename='generate.png') }}" alt="Open Chat" class="chat-icon">
+    </div>
+    <div class="chat-window" id="chatWindow" style="display: none;">
         <div class="chat-header">
             <span>Чат с Send-Code AI</span>
-            <span class="chat-close" onclick="toggleChat()">✖</span>
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADBklEQVR4nO2Z30tUQRTHP2ybsfqSlUJr/0H6punfEdY+1ENBZI/Ry7L9gH2ofK20+gcUjBKs/o6EREjsSUpJRMmCVSswBs7C5TBz997Zca8L+4WB5d453/nOzJ0z55yFDjroIARywBhwH5gHloEd4I+0HXn2DqgAo2KTOS4Ak8A34DBlMzZPgYEshJ8FXgEHHsJ12wdeAmdaJb4EbAUQrpvhvHqUwvOy6i4BP4EZ4BYwAvQBJ6X1yTPzbhbYjeGZlrGCogB8dAz4BbghfdLw3QRWHJwfUvLFIu8QXwPuNrlaeeCecGn+96F24rWF/DswTDiMAOuWcaZCHFhNuggUCY+icOvxxptxlVuWlT8K8XWYw76qxtwEevGA9ji1mM/moge/y2bQciZe+Nyw+4rEHFgbqsBf+dySoiQ2Vcf7B2rsvbQ7P2lxlTaPUI30STqJuvi6nW0SPZZD/SSp+JwltjF+3rbVUSFJJlFy2Axa+k6ofmtJA8Axyw1bSCmo1GRfg27gl+pv3G1DVJSRCQ/ikERYWvF1zCmbMgkwr4xM/NIIcQJ9xRvcVnZvSYBln22LEeorHkl8orZLJMC2MjpHctgm4SveoF/Zm4u1IXSS0kU6jDsm8Q+4lpLrlOLYb8UErsRM4HorJrDd7p/QsjK6lOEhHvM5xG3vRivKaLYJ8Wn62PDG5yLTvnc3o1CiB/it+g/7BnMmAW91MHfHN5hDKmZR45UMwukNpeExKTBgSWhM9aBVCc2jZhMapNwXJanFxEUhU8ohS0r5PFRSv96CpP5rqKQeqVXq23RRBgqNPuCTZbzLzRJPW0hXHZ7DF0OWlTftWQjyvNQqNXlNqgfGY/iiB3joKC0uACcIhILUKm0B2rok4CaHTYpu8fMbDs6FkMXd6E5MOQY8lAR8TuKXUfmmu6T1y7MJCQ/0DXuoPE6wlXclLJsxAnzbjxAHNil6pdynLzuftierfpoMUJSK2ZqHcGNjwoPzHAPk5JYuS8y+JJndgTTz+7O8K0vfY/E3awcd0Ob4DygcZgbVyIQWAAAAAElFTkSuQmCC" alt="Close" class="chat-close" onclick="toggleChat()">
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input">
             <input type="text" id="chatInput" placeholder="Введите сообщение...">
-            <button onclick="sendMessage()">Отправить</button>
+            <button onclick="sendMessage()">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADFklEQVR4nO2Z3UpUURTHf0yToXOT1QiNvUF6p808R0hddGMgTpfSzWAfeFN5W2n1AgZGCVbPkZAIiV1JKYUkWTCOFUxsWMJhtc+Zs/fZ4xjMHxbIOXt9/PecvfZaS+iiiy5CIAdUgFvAErAG7AK/RHbl2StgGiiLTsdxAZgFPgFNRzE6D4DBTgR+FngKHHgErqUBPAHOHFXwV4GdAIFrMTavtDPwvOx6XADfgQVgAhgFisBJkaI8M++eA3sJdubFV1D0Am9jHH4AxmWNi73rwHqMzTeO9hKRjwm+Dkxl3K08cFNsafuvQ/0SzyzGPwMjhMMosGXxMxfiwGqjK0CJ8CiJbe1vLEuq3LHsfMlxA4ykRRHYUD6/Av0e8f+TceqOn40J/LeIC4khy5l47HPDNpSRKY/gD3VdSdxWvvddP9tZS6rMewbvQ6JgOdT30wafs9Q24xmD9yFRVbqbaQvAiuWG7Q0QvCuJPuCH0jXptiWmldJCwOBdSSwqvVoaAktKacIj+Lgz4EpiUum8TENgzeFniwvedgEmrY1DWa1fJQW+KaVzCfk6KSBNgAQSQzE+BtRac7G2hG5SehLW1iLr/gDXIu9sBJDSIEpiJsH+KWWjEZrAIQkdfBKBKImZFra9CKT9hKK4aHmWRCBOJ8gnpA/xJfzQikAaVHwOsWsabSeBSZ80qi8y08N2isALn4tM5949z/40K4EC8FPZGPEt5kwDftQEbvgWc8jELKq87tFgZyFQALaV/j0XA4OWhsZMD46KwN2sDQ0y7osaqactZzMSGLa0lI8I1NRvtWkiEW3qP4Zq6pFZpd7JFXEUGkXgncXf5ayG5y1GNxIqSB8MW3beyMMQxvMyq9TG6zI9MBnDFwXgTsxocRk4QSD0yqxSOzk8F1XpYdOiT/L8dozN5ZDD3egvMRfjsCkN+KLUL2X5pntEBuRZVcoDfcM2VcYJtvM2jElmaAaWLyEObFr0y7hPX3Y+si+7fpoOoCQTs02PwI2OKQ/OcwyQk1u6JjX7qnR2ByLm7/fyriZrj8W/Wbvogv8cfwF9+VRAglZeSwAAAABJRU5ErkJggg==" alt="Send">
+            </button>
         </div>
     </div>
+    <script>
+        function getPreferredTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                return savedTheme;
+            }
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
 
+        function setTheme(theme) {
+            // Устанавливаем атрибут data-theme на html элемент
+            document.documentElement.setAttribute('data-theme', theme);
+            // Сохраняем выбранную тему в localStorage
+            localStorage.setItem('theme', theme);
+
+            // Обновляем иконки для темы
+            const themeIcon = document.getElementById('theme-icon');
+            const themeIconMobile = document.getElementById('theme-icon-mobile');
+
+            if (themeIcon) {
+                themeIcon.textContent = theme === 'dark' ? '🌙' : '☀️';
+            }
+            if (themeIconMobile) {
+                themeIconMobile.textContent = theme === 'dark' ? '🌙' : '☀️';
+            }
+        }
+
+        // Инициализация темы при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentTheme = getPreferredTheme();
+            setTheme(currentTheme);
+            document.documentElement.classList.add('theme-loaded');
+        });
+    </script>
     <script>
         let chatHistory = [];
         let lastRequestTime = 0;
@@ -75,8 +140,8 @@
 
         function sendMessage() {
             const now = Date.now();
-            if (now - lastRequestTime < 50000) {
-                alert("Запросы можно делать раз в 50 секунд");
+            if (now - lastRequestTime < 5000) {
+                alert("Запросы можно делать раз в 5 секунд");
                 return;
             }
 
@@ -86,7 +151,6 @@
                 displayMessage('User: ' + message);
                 chatHistory.push('User: ' + message);
 
-                // Отправляем запрос к нашему API
                 fetch(`/generate_neuro?history=${encodeURIComponent(chatHistory.join('\n'))}`)
                     .then(response => response.json())
                     .then(data => {
@@ -114,7 +178,7 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // Обработка нажатия Enter в поле ввода
+        // Блять, пожалуйста, не засирайте мне бд, я ее́ с телефона клинил 3 часа
         document.getElementById('chatInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();

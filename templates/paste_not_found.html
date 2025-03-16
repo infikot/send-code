@@ -1,0 +1,22 @@
+{% extends "base.html" %} 
+{% block content %}
+
+<div class="text-center py-5">
+    <h2 class="mb-4">Вставка не найдена</h2>
+    
+    <div class="mb-4">
+        <p class="lead">К сожалению, запрашиваемая вставка не существует или была удалена.</p>
+        <p>Возможно, вы перешли по устаревшей ссылке или допущена ошибка в URL.</p>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-main mt-3">Вернуться ко всем вставкам</a>
+    </div>
+    
+    <div class="mt-4">
+        <p>Хотите быть в курсе обновлений?</p>
+        <a href="{{ url_for('news') }}" class="btn btn-dark-gray mt-2">Посетите новости сайта</a>
+    </div>
+</div>
+
+{% endblock %}

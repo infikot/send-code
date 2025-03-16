@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="my-4">Новости</h2>
+<div class="list-group">
+    {% for news_item in news %}
+        <div class="list-group-item">
+            <h4>{{ news_item.title }}</h4>
+            <div>{{ news_item.content | safe }}</div> <!-- Поддержка HTML -->
+            <small class="text-muted">{{ news_item.date }}</small>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
